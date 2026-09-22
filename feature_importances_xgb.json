@@ -1,0 +1,90 @@
+[
+  {
+    "feature": "recall_accuracy",
+    "importance": 0.8290685415267944
+  },
+  {
+    "feature": "prior_review_count",
+    "importance": 0.042362820357084274
+  },
+  {
+    "feature": "cognitive_load_score",
+    "importance": 0.021712111309170723
+  },
+  {
+    "feature": "fatigue_rating",
+    "importance": 0.01870187558233738
+  },
+  {
+    "feature": "retention_score",
+    "importance": 0.014656265266239643
+  },
+  {
+    "feature": "distraction_level",
+    "importance": 0.008139983750879765
+  },
+  {
+    "feature": "phonological_load_flag",
+    "importance": 0.00811826717108488
+  },
+  {
+    "feature": "dyslexia_severity",
+    "importance": 0.004988810047507286
+  },
+  {
+    "feature": "days_since_last_review",
+    "importance": 0.0047759804874658585
+  },
+  {
+    "feature": "session_duration_min",
+    "importance": 0.004329309798777103
+  },
+  {
+    "feature": "sleep_hours_prev_night",
+    "importance": 0.004146947525441647
+  },
+  {
+    "feature": "age",
+    "importance": 0.003923865966498852
+  },
+  {
+    "feature": "wm_overload_flag",
+    "importance": 0.0038849986158311367
+  },
+  {
+    "feature": "subject__History",
+    "importance": 0.0038120325189083815
+  },
+  {
+    "feature": "subject__English",
+    "importance": 0.003667321288958192
+  },
+  {
+    "feature": "subject__Computer Science",
+    "importance": 0.0035255777183920145
+  },
+  {
+    "feature": "session_month",
+    "importance": 0.003485017456114292
+  },
+  {
+    "feature": "session_day_of_month",
+    "importance": 0.003459027037024498
+  },
+  {
+    "feature": "subject__Math",
+    "importance": 0.003452418837696314
+  },
+  {
+    "feature": "subject__Science",
+    "importance": 0.0034176057670265436
+  },
+  {
+    "feature": "time_of_day",
+    "importance": 0.0033064219169318676
+  },
+  {
+    "feature": "session_day_of_week",
+    "importance": 0.003064922522753477
+  }
+]

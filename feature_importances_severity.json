@@ -1,0 +1,74 @@
+[
+  {
+    "feature": "recommended_next_review_days",
+    "importance": 0.4153007271582325
+  },
+  {
+    "feature": "distraction_level",
+    "importance": 0.10048648175926767
+  },
+  {
+    "feature": "sleep_hours_prev_night",
+    "importance": 0.0936880470207013
+  },
+  {
+    "feature": "days_since_last_review",
+    "importance": 0.08222247540486151
+  },
+  {
+    "feature": "age",
+    "importance": 0.08138364859221162
+  },
+  {
+    "feature": "retention_score",
+    "importance": 0.05021054181703436
+  },
+  {
+    "feature": "wm_overload_flag",
+    "importance": 0.040102143374301145
+  },
+  {
+    "feature": "phonological_load_flag",
+    "importance": 0.038626214234586634
+  },
+  {
+    "feature": "session_day_of_week",
+    "importance": 0.023625624057687467
+  },
+  {
+    "feature": "prior_review_count",
+    "importance": 0.009419340093628215
+  },
+  {
+    "feature": "session_duration_min",
+    "importance": 0.009146454753940025
+  },
+  {
+    "feature": "fatigue_rating",
+    "importance": 0.009134322733934086
+  },
+  {
+    "feature": "cognitive_load_score",
+    "importance": 0.00479951043340332
+  },
+  {
+    "feature": "recall_accuracy",
+    "importance": 0.00322044890005978
+  },
+  {
+    "feature": "session_month",
+    "importance": 0.0019534879614341418
+  },
+  {
+    "feature": "time_of_day",
+    "importance": 0.0015503707460528203
+  },
+  {
+    "feature": "subject__Computer Science",
+    "importance": 0.000563877543879776
+  },
+  {
+    "feature": "session_day_of_month",
+    "importance": -0.0016162298316935609
+  }
+]

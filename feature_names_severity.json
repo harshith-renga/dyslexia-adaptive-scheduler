@@ -1,0 +1,20 @@
+[
+  "recommended_next_review_days",
+  "distraction_level",
+  "sleep_hours_prev_night",
+  "days_since_last_review",
+  "age",
+  "retention_score",
+  "wm_overload_flag",
+  "phonological_load_flag",
+  "session_day_of_week",
+  "prior_review_count",
+  "session_duration_min",
+  "fatigue_rating",
+  "cognitive_load_score",
+  "recall_accuracy",
+  "session_month",
+  "time_of_day",
+  "subject__Computer Science",
+  "session_day_of_month"
+]

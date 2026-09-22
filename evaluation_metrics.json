@@ -1,0 +1,15 @@
+{
+  "MAE": 0.458,
+  "RMSE": 0.5715,
+  "R2": 0.9578,
+  "MAPE_pct": 17.46,
+  "CV_MAE": 0.4553,
+  "best_params": {
+    "min_samples_leaf": 50,
+    "max_leaf_nodes": 63,
+    "max_depth": 4,
+    "max_bins": 128,
+    "learning_rate": 0.05,
+    "l2_regularization": 1.0
+  }
+}

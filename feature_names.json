@@ -1,0 +1,17 @@
+[
+  "dyslexia_severity",
+  "prior_review_count",
+  "fatigue_rating",
+  "sleep_hours_prev_night",
+  "distraction_level",
+  "phonological_load_flag",
+  "wm_overload_flag",
+  "session_duration_min",
+  "days_since_last_review",
+  "age",
+  "session_month",
+  "subject",
+  "session_day_of_month",
+  "session_day_of_week",
+  "time_of_day"
+]

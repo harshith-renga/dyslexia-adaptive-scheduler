@@ -1,0 +1,62 @@
+[
+  {
+    "feature": "dyslexia_severity",
+    "importance": 0.9455986009533153
+  },
+  {
+    "feature": "prior_review_count",
+    "importance": 0.8142383608575227
+  },
+  {
+    "feature": "fatigue_rating",
+    "importance": 0.2986454508890488
+  },
+  {
+    "feature": "sleep_hours_prev_night",
+    "importance": 0.1672124870312124
+  },
+  {
+    "feature": "distraction_level",
+    "importance": 0.15108403781312357
+  },
+  {
+    "feature": "phonological_load_flag",
+    "importance": 0.1113004355845584
+  },
+  {
+    "feature": "wm_overload_flag",
+    "importance": 0.10788194249137921
+  },
+  {
+    "feature": "session_duration_min",
+    "importance": 0.08962411414183594
+  },
+  {
+    "feature": "days_since_last_review",
+    "importance": 0.0754899879408341
+  },
+  {
+    "feature": "age",
+    "importance": 0.0005870383782004384
+  },
+  {
+    "feature": "session_month",
+    "importance": 9.424617899022602e-05
+  },
+  {
+    "feature": "subject",
+    "importance": -6.484163903958118e-06
+  },
+  {
+    "feature": "session_day_of_month",
+    "importance": -7.16650320966572e-05
+  },
+  {
+    "feature": "session_day_of_week",
+    "importance": -8.017593290605141e-05
+  },
+  {
+    "feature": "time_of_day",
+    "importance": -9.752634529589522e-05
+  }
+]
