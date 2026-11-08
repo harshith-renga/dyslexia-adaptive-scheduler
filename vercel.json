@@ -1,9 +1,13 @@
 {
-  "rewrites": [{ "source": "/(.*)", "destination": "/api/index" }],
-  "functions": {
-    "api/index.py": {
-      "includeFiles": "{backend/**,ml/models/revision_scheduler_model.pkl,ml/artifacts/feature_importances.json}",
-      "maxDuration": 30
+  "builds": [
+    {
+      "src": "api/index.py",
+      "use": "@vercel/python",
+      "config": {
+        "maxLambdaSize": "500mb",
+        "includeFiles": ["backend/**", "ml/models/revision_scheduler_model.pkl", "ml/artifacts/feature_importances.json"]
+      }
     }
-  }
+  ],
+  "routes": [{ "src": "/(.*)", "dest": "/api/index.py" }]
 }
