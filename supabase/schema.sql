@@ -27,3 +27,9 @@ create index if not exists idx_sessions_user on public.sessions(user_id);
 
 alter table public.users    enable row level security;
 alter table public.sessions enable row level security;
+
+-- The backend uses the service_role key. Grant it access explicitly so this also
+-- works when "Automatically expose new tables" is switched off in the project.
+grant usage on schema public to service_role;
+grant all on public.users, public.sessions to service_role;
+grant usage, select on all sequences in schema public to service_role;
