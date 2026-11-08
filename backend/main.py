@@ -11,6 +11,7 @@ from __future__ import annotations
 import os
 import sqlite3
 import hashlib
+import hmac
 import json
 import math
 from contextlib import contextmanager
@@ -20,7 +21,7 @@ from typing import Optional, List
 import numpy as np
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 # ── optional heavy deps ──────────────────────────────────────────────────────
 try:
@@ -107,6 +108,9 @@ def init_db():
 
 init_db()
 
+# Optional Supabase storage (enabled only when SUPABASE_URL / SUPABASE_SERVICE_KEY are set)
+import supabase_store as sb
+
 
 # ════════════════════════════════════════════════════════════════════════════
 # ML model (optional)
@@ -115,8 +119,9 @@ model = None
 FEATURE_IMPORTANCES: list = []
 
 if _HAS_ML:
-    MODEL_PATH = os.path.join(BASE_DIR, "..", "revision_scheduler_model.pkl")
-    FI_PATH    = os.path.join(BASE_DIR, "..", "feature_importances.json")
+    ML_DIR     = os.path.join(BASE_DIR, "..", "ml")
+    MODEL_PATH = os.path.join(ML_DIR, "models", "revision_scheduler_model.pkl")
+    FI_PATH    = os.path.join(ML_DIR, "artifacts", "feature_importances.json")
 
     if os.path.exists(MODEL_PATH):
         try:
@@ -136,8 +141,38 @@ if _HAS_ML:
 # ════════════════════════════════════════════════════════════════════════════
 # Helpers
 # ════════════════════════════════════════════════════════════════════════════
+_PBKDF2_ROUNDS = 200_000
+
+
 def _hash(password: str) -> str:
-    return hashlib.sha256(password.encode()).hexdigest()
+    """Salted PBKDF2 hash, stored as 'pbkdf2$<salt hex>$<hash hex>'."""
+    salt = os.urandom(16)
+    digest = hashlib.pbkdf2_hmac("sha256", password.encode(), salt, _PBKDF2_ROUNDS)
+    return f"pbkdf2${salt.hex()}${digest.hex()}"
+
+
+def _verify(password: str, stored: str) -> bool:
+    """Check a password against a stored hash (supports legacy unsalted SHA-256)."""
+    if stored.startswith("pbkdf2$"):
+        try:
+            _, salt_hex, hash_hex = stored.split("$")
+            digest = hashlib.pbkdf2_hmac(
+                "sha256", password.encode(), bytes.fromhex(salt_hex), _PBKDF2_ROUNDS
+            )
+            return hmac.compare_digest(digest.hex(), hash_hex)
+        except ValueError:
+            return False
+    legacy = hashlib.sha256(password.encode()).hexdigest()
+    return hmac.compare_digest(legacy, stored)
+
+
+def _is_legacy_hash(stored: str) -> bool:
+    return not stored.startswith("pbkdf2$")
+
+
+def _parse_dt(value: str) -> datetime:
+    """fromisoformat that also accepts a trailing 'Z' (Python < 3.11)."""
+    return datetime.fromisoformat(value.replace("Z", "+00:00"))
 
 
 def _row_to_dict(row: sqlite3.Row) -> dict:
@@ -169,9 +204,9 @@ class StudySessionIn(BaseModel):
     topic:          str  = "Session"
     start_time:     str
     end_time:       str
-    recall_score:   float = 0.5
-    fatigue_level:  int   = 5
-    retention_score: float = 0.5
+    recall_score:   float = Field(0.5, ge=0, le=1)
+    fatigue_level:  int   = Field(5, ge=0, le=10)
+    retention_score: float = Field(0.5, ge=0, le=1)
 
 
 class PredictionRequest(BaseModel):
@@ -211,6 +246,13 @@ def register(body: RegisterRequest):
     if len(body.password) < 4:
         raise HTTPException(400, "Password must be at least 4 characters")
 
+    if sb.enabled:
+        name = body.username.strip()
+        if sb.find_user_id(name):
+            raise HTTPException(400, "Username already taken. Please choose another.")
+        uid = sb.create_user(name, body.email.strip(), _hash(body.password))
+        return {"message": "Account created successfully", "user_id": uid}
+
     with db() as conn:
         existing = conn.execute(
             "SELECT id FROM users WHERE username = ?", (body.username.strip(),)
@@ -232,14 +274,26 @@ def login(body: LoginRequest):
     if not body.username.strip() or not body.password:
         raise HTTPException(400, "Username and password are required")
 
-    with db() as conn:
-        row = conn.execute(
-            "SELECT id, username, password_hash FROM users WHERE username = ?",
-            (body.username.strip(),)
-        ).fetchone()
+    if sb.enabled:
+        row = sb.get_user_for_login(body.username.strip())
+    else:
+        with db() as conn:
+            row = conn.execute(
+                "SELECT id, username, password_hash FROM users WHERE username = ?",
+                (body.username.strip(),)
+            ).fetchone()
 
-    if not row or row["password_hash"] != _hash(body.password):
+    if not row or not _verify(body.password, row["password_hash"]):
         raise HTTPException(401, "Incorrect username or password")
+
+    # Quietly upgrade accounts created with the old unsalted SHA-256 hash
+    if _is_legacy_hash(row["password_hash"]):
+        new_hash = _hash(body.password)
+        if sb.enabled:
+            sb.update_password_hash(row["id"], new_hash)
+        else:
+            with db() as conn:
+                conn.execute("UPDATE users SET password_hash = ? WHERE id = ?", (new_hash, row["id"]))
 
     return {"message": "Login successful", "user_id": row["id"], "username": row["username"]}
 
@@ -248,14 +302,31 @@ def login(body: LoginRequest):
 
 @app.post("/session")
 def create_session(s: StudySessionIn):
-    uid = s.user_id or 1   # fallback for demo
+    # Never write a session into another account: the user must be named and exist.
+    if s.user_id is None:
+        raise HTTPException(400, "user_id is required")
+    uid = s.user_id
 
-    # Validate user exists — silently create guest user if db is fresh
+    try:
+        if _parse_dt(s.end_time) < _parse_dt(s.start_time):
+            raise HTTPException(400, "end_time must not be before start_time")
+    except ValueError:
+        raise HTTPException(400, "start_time and end_time must be ISO 8601 timestamps")
+
+    if sb.enabled:
+        if not sb.user_exists(uid):
+            raise HTTPException(404, "User not found. Please sign in again.")
+        sb.add_session({
+            "user_id": uid, "topic": s.topic,
+            "start_time": s.start_time, "end_time": s.end_time,
+            "recall_score": s.recall_score, "fatigue_level": s.fatigue_level,
+            "retention_score": s.retention_score,
+        })
+        return {"message": "Session saved"}
+
     with db() as conn:
-        user = _user_by_id(conn, uid)
-        if not user:
-            # Demo fallback: use uid=1, skip
-            uid = 1
+        if not _user_by_id(conn, uid):
+            raise HTTPException(404, "User not found. Please sign in again.")
 
         conn.execute(
             """INSERT INTO sessions
@@ -270,6 +341,8 @@ def create_session(s: StudySessionIn):
 
 @app.get("/sessions/{user_id}")
 def get_sessions(user_id: int):
+    if sb.enabled:
+        return sb.list_sessions(user_id)
     with db() as conn:
         rows = conn.execute(
             """SELECT id, user_id, topic, start_time, end_time,
@@ -283,6 +356,9 @@ def get_sessions(user_id: int):
 
 @app.delete("/session/{session_id}")
 def delete_session(session_id: int):
+    if sb.enabled:
+        sb.delete_session(session_id)
+        return {"message": "Session deleted"}
     with db() as conn:
         conn.execute("DELETE FROM sessions WHERE id = ?", (session_id,))
     return {"message": "Session deleted"}
@@ -290,6 +366,9 @@ def delete_session(session_id: int):
 
 @app.delete("/sessions/{user_id}/all")
 def clear_sessions(user_id: int):
+    if sb.enabled:
+        sb.clear_sessions(user_id)
+        return {"message": "All sessions cleared"}
     with db() as conn:
         conn.execute("DELETE FROM sessions WHERE user_id = ?", (user_id,))
     return {"message": "All sessions cleared"}
@@ -299,18 +378,20 @@ def clear_sessions(user_id: int):
 
 @app.get("/stats/{user_id}")
 def get_stats(user_id: int):
-    with db() as conn:
-        rows = conn.execute(
-            "SELECT recall_score, fatigue_level, retention_score, start_time, end_time FROM sessions WHERE user_id = ?",
-            (user_id,)
-        ).fetchall()
-
-    sessions = [_row_to_dict(r) for r in rows]
+    if sb.enabled:
+        sessions = sb.list_sessions(user_id)
+    else:
+        with db() as conn:
+            rows = conn.execute(
+                "SELECT recall_score, fatigue_level, retention_score, start_time, end_time FROM sessions WHERE user_id = ?",
+                (user_id,)
+            ).fetchall()
+        sessions = [_row_to_dict(r) for r in rows]
     total_minutes = 0
     for s in sessions:
         try:
-            start = datetime.fromisoformat(s["start_time"])
-            end   = datetime.fromisoformat(s["end_time"])
+            start = _parse_dt(s["start_time"])
+            end   = _parse_dt(s["end_time"])
             total_minutes += max(0, (end - start).total_seconds() / 60)
         except Exception:
             pass
@@ -425,4 +506,8 @@ def model_info():
 
 @app.get("/health")
 def health():
-    return {"status": "ok", "db": DB_PATH, "model_loaded": bool(model)}
+    return {
+        "status": "ok",
+        "db": "supabase" if sb.enabled else DB_PATH,
+        "model_loaded": bool(model),
+    }

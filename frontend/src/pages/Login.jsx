@@ -38,10 +38,10 @@ export default function Login() {
     try {
       if (isLogin) {
         await login({ username: form.username, password: form.password })
-        toast('Welcome back, ' + form.username + '! 👋', 'success')
+        toast('Welcome back, ' + form.username + '', 'success')
       } else {
         await register({ username: form.username, email: form.email, password: form.password })
-        toast('Account created! Welcome, ' + form.username + '! 🎉', 'success')
+        toast('Account created. Welcome, ' + form.username + '.', 'success')
       }
       navigate('/dashboard')
     } catch (err) {
@@ -87,8 +87,7 @@ export default function Login() {
 
   return (
     <div
-      className="flex items-center justify-center min-h-[calc(100vh-64px)] px-4 py-12"
-      style={{ background: 'radial-gradient(ellipse at center, rgba(99,102,241,0.08) 0%, var(--bg-primary) 70%)' }}
+      className="flex items-center justify-center min-h-[calc(100svh-64px)] px-4 py-12"
     >
       <motion.div
         initial={{ opacity: 0, y: 24 }}
@@ -100,10 +99,10 @@ export default function Login() {
         <div className="card p-10">
           {/* Header */}
           <div className="flex flex-col items-center mb-8">
-            <div style={{ background: 'linear-gradient(135deg, #6366F1, #8B5CF6)', borderRadius: 16, width: 56, height: 56, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16, boxShadow: '0 0 24px rgba(99,102,241,0.4)' }}>
-              <BookOpen size={26} className="text-white" />
+            <div style={{ background: 'var(--accent)', color: 'var(--on-accent)', borderRadius: 12, width: 56, height: 56, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+              <BookOpen size={26} />
             </div>
-            <h1 className="text-3xl font-extrabold mb-1">{isLogin ? 'Welcome Back' : 'Create Account'}</h1>
+            <h1 className="text-3xl font-bold mb-1">{isLogin ? 'Welcome back' : 'Create an account'}</h1>
             <p className="text-slate-400 text-base">
               {isLogin ? 'Sign in to access your schedule' : 'Start your personalised learning journey'}
             </p>
@@ -148,7 +147,7 @@ export default function Login() {
 
         {/* Quick tip */}
         <p className="text-center text-slate-500 text-sm mt-6">
-          🔒 Your data is stored securely. No email confirmation needed for demo.
+          No email confirmation is needed for this demo.
         </p>
       </motion.div>
     </div>

@@ -38,11 +38,11 @@ warnings.filterwarnings('ignore')
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
 BASE_DIR  = os.path.dirname(os.path.abspath(__file__))
-DATA_CSV  = os.path.join(BASE_DIR, 'dyslexic_adaptive_scheduler_dataset_clean.csv')
-MODEL_OUT = os.path.join(BASE_DIR, 'dyslexia_severity_classifier.pkl')
-FEAT_OUT  = os.path.join(BASE_DIR, 'feature_names_severity.json')
-FI_OUT    = os.path.join(BASE_DIR, 'feature_importances_severity.json')
-LE_OUT    = os.path.join(BASE_DIR, 'label_encoder_severity.pkl')
+DATA_CSV  = os.path.join(BASE_DIR, 'data', 'dyslexic_adaptive_scheduler_dataset_clean.csv')
+MODEL_OUT = os.path.join(BASE_DIR, 'models', 'dyslexia_severity_classifier.pkl')
+FEAT_OUT  = os.path.join(BASE_DIR, 'artifacts', 'feature_names_severity.json')
+FI_OUT    = os.path.join(BASE_DIR, 'artifacts', 'feature_importances_severity.json')
+LE_OUT    = os.path.join(BASE_DIR, 'models', 'label_encoder_severity.pkl')
 
 # ── Config ────────────────────────────────────────────────────────────────────
 TARGET      = 'dyslexia_severity'                        # ← classification target

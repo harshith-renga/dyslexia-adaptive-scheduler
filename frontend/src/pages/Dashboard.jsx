@@ -50,16 +50,16 @@ function StatCard({ icon: Icon, color, label, value, sub, delay = 0 }) {
 function FatigueBar({ pct }) {
   const color = pct <= 33 ? '#10B981' : pct <= 66 ? '#F59E0B' : '#EF4444'
   const label = pct <= 33
-    ? '😊 Low — you\'re good to study'
+    ? 'Low — you\'re good to study'
     : pct <= 66
-      ? '😐 Moderate — take short breaks'
-      : '😴 High — rest is recommended'
+      ? 'Moderate — take short breaks'
+      : 'High — rest is recommended'
   return (
     <div>
       <div className="progress-bar mb-3">
         <div
           className="progress-fill"
-          style={{ width: `${pct}%`, background: `linear-gradient(90deg, ${color}80, ${color})` }}
+          style={{ width: `${pct}%`, background: color }}
         />
       </div>
       <p className="font-semibold text-sm" style={{ color }}>{label}</p>
@@ -124,10 +124,12 @@ export default function Dashboard({ darkMode }) {
     ? Math.round((sessions.reduce((a, b) => a + (b.fatigue_level || 0), 0) / sessions.length) / 10 * 100)
     : 0
 
-  const todayISO = new Date().toISOString().slice(0, 10)
+  // "Today" is the user's local calendar day, not the UTC day
+  const localDay = d => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`
+  const todayKey = localDay(new Date())
   const todaySessions = sessions.filter(s => {
-    try { return new Date(s.start_time).toISOString().slice(0, 10) === todayISO }
-    catch { return false }
+    const d = new Date(s.start_time)
+    return !isNaN(d) && localDay(d) === todayKey
   })
 
   /* ── Predict ── */
@@ -160,7 +162,7 @@ export default function Dashboard({ darkMode }) {
       if (res.next_revision_interval !== undefined) {
         setPrediction(res.next_revision_interval)
         const src = res.source === 'ml_model' ? '(AI model)' : '(rule-based)'
-        toast(`Review in ${Math.round(res.next_revision_interval)} day(s) ${src} 🧠`, 'success')
+        toast(`Review in ${Math.round(res.next_revision_interval)} day(s) ${src}`, 'success')
         setBackendOnline(true)
       } else {
         toast('Could not get prediction — check backend', 'error')
@@ -181,15 +183,15 @@ export default function Dashboard({ darkMode }) {
       const start = new Date().toISOString()
       const end   = new Date(Date.now() + Number(form.session_duration_min) * 60000).toISOString()
       await createSession({
-        user_id:        user?.user_id || 1,
+        user_id:        user.user_id,
         topic:          topic.trim(),
         start_time:     start,
         end_time:       end,
         recall_score:   Number(form.recall_accuracy),
         fatigue_level:  Math.round(Number(form.fatigue_rating)),
-        retention_score: Number(form.recall_accuracy) || 0.5,
+        retention_score: Number(form.recall_accuracy),
       })
-      toast('Session saved! ✅', 'success')
+      toast('Session saved', 'success')
       setBackendOnline(true)
       loadSessions()
       setTopic('')
@@ -213,7 +215,7 @@ export default function Dashboard({ darkMode }) {
       {/* ── Header ── */}
       <div className="flex items-start justify-between mb-6 flex-wrap gap-4">
         <div>
-          <h1 className="text-4xl font-extrabold mb-2">
+          <h1 className="text-4xl font-bold mb-2">
             <span className="gradient-text">Dashboard</span>
           </h1>
           <p className="text-slate-400 text-lg">
@@ -237,7 +239,7 @@ export default function Dashboard({ darkMode }) {
       {/* ── Stat cards ── */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <StatCard
-          icon={Clock} color="#6366F1" label="Total Study Time" delay={0}
+          icon={Clock} color="#2F9E8C" label="Total Study Time" delay={0}
           value={`${Math.floor(totalMin / 60)}h ${Math.round(totalMin % 60)}m`}
           sub="All recorded sessions"
         />
@@ -259,7 +261,7 @@ export default function Dashboard({ darkMode }) {
         {/* Today's sessions */}
         <motion.div
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-          className="card p-7" style={{ borderTop: '3px solid #6366F1' }}
+          className="card p-7" style={{ border: '1px solid #2F9E8C66' }}
         >
           <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
             <Clock size={20} className="text-indigo-400" /> Today's Sessions
@@ -278,7 +280,7 @@ export default function Dashboard({ darkMode }) {
                 <li
                   key={s.id || i}
                   className="flex justify-between items-center text-sm"
-                  style={{ padding: '10px 12px', background: 'rgba(99,102,241,0.08)', borderRadius: 10 }}
+                  style={{ padding: '10px 12px', background: 'rgba(47,158,140,0.18)', borderRadius: 10 }}
                 >
                   <div>
                     <div className="font-semibold">{s.topic}</div>
@@ -298,7 +300,7 @@ export default function Dashboard({ darkMode }) {
         {/* Fatigue indicator */}
         <motion.div
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-          className="card p-7" style={{ borderTop: '3px solid #F59E0B' }}
+          className="card p-7" style={{ border: '1px solid #F59E0B66' }}
         >
           <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
             <Zap size={20} className="text-amber-400" /> Fatigue Indicator
@@ -311,14 +313,14 @@ export default function Dashboard({ darkMode }) {
             <FatigueBar pct={avgFatiguePct} />
           )}
           <div className="mt-6 text-xs text-slate-500 leading-relaxed">
-            💡 High fatigue? Shorten sessions to 20 minutes with 10-minute breaks.
+            High fatigue? Shorten sessions to 20 minutes with 10-minute breaks.
           </div>
         </motion.div>
 
         {/* Quick session entry */}
         <motion.div
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-          className="card p-7" style={{ borderTop: '3px solid #10B981' }}
+          className="card p-7" style={{ border: '1px solid #10B98166' }}
         >
           <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
             <TrendingUp size={20} className="text-emerald-400" /> Quick Session Entry
@@ -470,8 +472,8 @@ export default function Dashboard({ darkMode }) {
           <ResponsiveContainer width="100%" height={260}>
             <LineChart data={chartData}>
               <CartesianGrid strokeDasharray="4 4" stroke="rgba(148,163,184,0.08)" />
-              <XAxis dataKey="name" stroke="#64748B" tick={{ fontFamily: 'Lexend', fontSize: 11 }} />
-              <YAxis stroke="#64748B" tick={{ fontFamily: 'Lexend', fontSize: 11 }} />
+              <XAxis dataKey="name" stroke="#8A867D" tick={{ fontFamily: 'Lexend', fontSize: 11 }} />
+              <YAxis stroke="#8A867D" tick={{ fontFamily: 'Lexend', fontSize: 11 }} />
               <Tooltip
                 contentStyle={{
                   background: '#1E293B',
@@ -485,8 +487,8 @@ export default function Dashboard({ darkMode }) {
               <Legend wrapperStyle={{ fontFamily: 'Lexend', fontSize: 13 }} />
               <Line
                 type="monotone" dataKey="Retention %"
-                stroke="#6366F1" strokeWidth={2.5}
-                dot={{ fill: '#6366F1', r: 4 }}
+                stroke="#2F9E8C" strokeWidth={2.5}
+                dot={{ fill: '#2F9E8C', r: 4 }}
                 activeDot={{ r: 6 }}
               />
               <Line

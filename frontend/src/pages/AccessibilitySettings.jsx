@@ -38,7 +38,7 @@ function Toggle({ on, onChange, id, label }) {
         onKeyDown={e => (e.key === ' ' || e.key === 'Enter') && onChange(!on)}
         style={{
           width: 52, height: 28, borderRadius: 99,
-          background: on ? '#6366F1' : 'rgba(148,163,184,0.2)',
+          background: on ? '#2F9E8C' : 'rgba(148,163,184,0.2)',
           position: 'relative', transition: 'background 0.2s', cursor: 'pointer',
         }}
       >
@@ -107,7 +107,7 @@ export default function AccessibilitySettings({ darkMode, setDarkMode, fontSize,
         el.href = 'https://fonts.googleapis.com/css2?family=Lexend+Deca:wght@400;500;600;700&display=swap'
         document.head.appendChild(el)
       }
-      toast('Switched to Lexend Deca — made for dyslexic readers 📖', 'success')
+      toast('Switched to Lexend Deca — made for dyslexic readers', 'success')
     } else {
       toast('Switched back to standard Lexend font', 'info')
     }
@@ -124,7 +124,7 @@ export default function AccessibilitySettings({ darkMode, setDarkMode, fontSize,
     <div className="max-w-3xl mx-auto px-6 py-10">
       {/* Header */}
       <div className="mb-10">
-        <h1 className="text-4xl font-extrabold mb-2">
+        <h1 className="text-4xl font-bold mb-2">
           <span className="gradient-text">Accessibility</span>
         </h1>
         <p className="text-slate-400 text-lg">Customise the app so reading and studying feels comfortable for you.</p>
@@ -135,7 +135,7 @@ export default function AccessibilitySettings({ darkMode, setDarkMode, fontSize,
         {/* ── Text-to-Speech ──────────────────── */}
         <Section
           icon={Volume2}
-          color="#6366F1"
+          color="#2F9E8C"
           title="Text-to-Speech"
           desc="Hear text read aloud to reduce reading effort. Click the play button and the app will speak to you."
         >
@@ -158,14 +158,14 @@ export default function AccessibilitySettings({ darkMode, setDarkMode, fontSize,
             </button>
           </div>
           <p className="text-xs text-slate-500 mt-4">
-            💡 You can add read-aloud to any section in a future update. For now, test the voice quality here.
+            You can add read-aloud to any section in a future update. For now, test the voice quality here.
           </p>
         </Section>
 
         {/* ── Dark / Light Mode ───────────────── */}
         <Section
           icon={darkMode ? Moon : Sun}
-          color={darkMode ? '#8B5CF6' : '#F59E0B'}
+          color={darkMode ? '#2F9E8C' : '#F59E0B'}
           title={`${darkMode ? 'Dark' : 'Light'} Mode`}
           desc="Dark mode uses less bright light, reducing eye strain during long study sessions. Switch any time."
         >
@@ -229,7 +229,7 @@ export default function AccessibilitySettings({ darkMode, setDarkMode, fontSize,
         {/* ── Dyslexia Font ───────────────────── */}
         <Section
           icon={BookOpen}
-          color="#A78BFA"
+          color="#5EC4B0"
           title="Dyslexia-Optimised Font"
           desc="Lexend Deca is a font specially designed to reduce visual stress and improve reading speed for dyslexic readers."
         >
@@ -246,7 +246,7 @@ export default function AccessibilitySettings({ darkMode, setDarkMode, fontSize,
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
-          style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)', borderRadius: 16, padding: '24px 28px' }}
+          style={{ background: 'rgba(47,158,140,0.18)', border: '1px solid rgba(47,158,140,0.18)', borderRadius: 16, padding: '24px 28px' }}
         >
           <div className="flex items-center gap-2 mb-4">
             <Info size={20} className="text-indigo-400" />
@@ -255,10 +255,10 @@ export default function AccessibilitySettings({ darkMode, setDarkMode, fontSize,
           <ul className="space-y-2 text-sm text-slate-300">
             {[
               ['Text-to-Speech', 'available — click Test button'],
-              ['Dark Mode', darkMode ? 'ON ✅' : 'OFF'],
+              ['Dark Mode', darkMode ? 'ON' : 'OFF'],
               ['Text Size', `${fontSize}px`],
-              ['Reading Guide', readingGuide ? 'ON ✅' : 'OFF'],
-              ['Dyslexia Font', dyslexicFont ? 'Lexend Deca ON ✅' : 'Lexend (standard)'],
+              ['Reading Guide', readingGuide ? 'ON' : 'OFF'],
+              ['Dyslexia Font', dyslexicFont ? 'Lexend Deca ON' : 'Lexend (standard)'],
               ['High Contrast', 'always on'],
               ['Large click targets', 'all buttons ≥ 44px'],
             ].map(([k, v]) => (

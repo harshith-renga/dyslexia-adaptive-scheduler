@@ -22,7 +22,13 @@ async function request(path, opts = {}) {
   try { json = JSON.parse(text) } catch { json = null }
 
   if (!res.ok) {
-    const detail = json?.detail || json?.message || text || res.statusText
+    let detail = json?.detail || json?.message || text || res.statusText
+    // FastAPI validation errors (422) arrive as an array of { loc, msg }
+    if (Array.isArray(detail)) {
+      detail = detail.map(d => `${(d.loc || []).slice(1).join('.')}: ${d.msg}`).join('; ')
+    } else if (typeof detail !== 'string') {
+      detail = JSON.stringify(detail)
+    }
     throw new Error(detail)
   }
   return json ?? {}

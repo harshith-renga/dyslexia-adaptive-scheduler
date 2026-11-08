@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useCallback } from 'react'
+﻿import { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   BookOpen, Timer, Zap, Plus, Trash2, X, ChevronRight,
@@ -10,6 +10,22 @@ import { useToast } from '../ToastContext'
 
 /* ── Helpers ──────────────────────────────────────────── */
 function clamp(v, min, max) { return Math.max(min, Math.min(max, v)) }
+
+/** JSON from localStorage, or the fallback if it is missing or corrupt. */
+function readStored(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key)
+    return raw === null ? fallback : JSON.parse(raw) ?? fallback
+  } catch {
+    return fallback
+  }
+}
+
+/** Current local time formatted for <input type="datetime-local"> (YYYY-MM-DDTHH:mm). */
+function localDateTimeInput(date = new Date()) {
+  const pad = n => String(n).padStart(2, '0')
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
+}
 
 function fmtTime(iso) {
   return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -65,7 +81,7 @@ function ScheduleBlock({ s, idx }) {
           </div>
         </div>
         <div className="text-right flex-shrink-0">
-          <div className="font-bold" style={{ color: isBreak ? '#F59E0B' : '#6366F1' }}>{s.duration} min</div>
+          <div className="font-bold" style={{ color: isBreak ? '#F59E0B' : '#2F9E8C' }}>{s.duration} min</div>
           <div className="text-xs mt-1" style={{ color: fatigueColor(s.fatigueAfter) }}>
             {s.fatigueBefore}% → {s.fatigueAfter}%
           </div>
@@ -84,14 +100,17 @@ export default function StudyPlanner() {
   const { user } = useAuth()
   const toast = useToast()
 
-  const [tasks, setTasks]       = useState(() => JSON.parse(localStorage.getItem('planner_tasks')   || '[]'))
-  const [profile, setProfile]   = useState(() => JSON.parse(localStorage.getItem('planner_profile') || JSON.stringify(DEFAULT_PROFILE)))
+  const [tasks, setTasks]       = useState(() => {
+    const saved = readStored('planner_tasks', [])
+    return Array.isArray(saved) ? saved : []
+  })
+  const [profile, setProfile]   = useState(() => ({ ...DEFAULT_PROFILE, ...readStored('planner_profile', {}) }))
   const [settings, setSettings] = useState(() => {
-    const saved = JSON.parse(localStorage.getItem('planner_settings') || '{}')
-    return { ...DEFAULT_SETTINGS, startTime: new Date().toISOString().substring(0, 16), ...saved }
+    // startTime is never restored: an old saved start would schedule today's plan in the past.
+    const { startTime: _ignored, ...saved } = readStored('planner_settings', {})
+    return { ...DEFAULT_SETTINGS, ...saved, startTime: localDateTimeInput() }
   })
   const [newTask, setNewTask]   = useState(DEFAULT_TASK)
-  const [schedule, setSchedule] = useState([])
   const [errors, setErrors]     = useState([])
   const [showConfirm, setShowConfirm] = useState(false)
   const [saving, setSaving]     = useState(false)
@@ -100,7 +119,7 @@ export default function StudyPlanner() {
   useEffect(() => { localStorage.setItem('planner_tasks',   JSON.stringify(tasks))    }, [tasks])
   useEffect(() => { localStorage.setItem('planner_profile', JSON.stringify(profile))  }, [profile])
   useEffect(() => { localStorage.setItem('planner_settings',JSON.stringify(settings)) }, [settings])
-  useEffect(() => { computeSchedule() }, [tasks, profile, settings])
+  const schedule = useMemo(() => computeSchedule(), [tasks, profile, settings])
 
   /* Fatigue calculation */
   function computeInitialFatigue() {
@@ -119,7 +138,7 @@ export default function StudyPlanner() {
 
   /* Schedule engine */
   function computeSchedule() {
-    if (!tasks.length) { setSchedule([]); return }
+    if (!tasks.length) return []
     let fatigue = computeInitialFatigue()
     const blocks = []
     let cursor = settings.startTime ? new Date(settings.startTime) : new Date()
@@ -128,7 +147,7 @@ export default function StudyPlanner() {
     const priorityOrder = { High: 0, Medium: 1, Low: 2 }
     const sorted = [...tasks].sort((a, b) => (priorityOrder[a.priority] ?? 1) - (priorityOrder[b.priority] ?? 1))
 
-    sorted.forEach(t => {
+    sorted.forEach((t, taskIdx) => {
       let remaining = Number(t.duration)
       const diff = Number(t.difficulty)
       while (remaining > 0) {
@@ -141,7 +160,9 @@ export default function StudyPlanner() {
         cursor = new Date(end)
         remaining -= block
         untilBreak -= block
-        if (untilBreak <= 0) {
+        // Only break if more work follows: no pointless trailing break at the end of the plan
+        const moreWork = remaining > 0 || taskIdx < sorted.length - 1
+        if (untilBreak <= 0 && moreWork) {
           const bd = Number(settings.breakDuration) || 10
           blocks.push({ taskId: null, title: 'Break', subject: '', start: new Date(cursor).toISOString(), end: new Date(cursor.getTime() + bd * 60000).toISOString(), duration: bd, fatigueBefore: Math.round(fatigue * 100), fatigueAfter: Math.round(fatigue * 100) })
           cursor = new Date(cursor.getTime() + bd * 60000)
@@ -149,7 +170,7 @@ export default function StudyPlanner() {
         }
       }
     })
-    setSchedule(blocks)
+    return blocks
   }
 
   /* Add task */
@@ -163,7 +184,7 @@ export default function StudyPlanner() {
     setTasks(prev => [...prev, { ...newTask, id: Date.now() }])
     setNewTask(DEFAULT_TASK)
     setErrors([])
-    toast('Task added to schedule ✅', 'success')
+    toast('Task added to schedule', 'success')
   }
 
   /* Save schedule to backend (one session per study block) */
@@ -174,7 +195,7 @@ export default function StudyPlanner() {
     try {
       await Promise.all(studyBlocks.map(s =>
         createSession({
-          user_id: user?.user_id || 1,
+          user_id: user.user_id,
           topic: s.title + (s.subject ? ` — ${s.subject}` : ''),
           start_time: s.start,
           end_time: s.end,
@@ -183,7 +204,7 @@ export default function StudyPlanner() {
           retention_score: 0.5,
         })
       ))
-      toast(`Saved ${studyBlocks.length} session(s) to your account 🎉`, 'success')
+      toast(`Saved ${studyBlocks.length} session(s) to your account`, 'success')
     } catch (err) {
       toast('Save failed: ' + err.message, 'error')
     } finally {
@@ -192,10 +213,10 @@ export default function StudyPlanner() {
   }
 
   /* Copy */
-  const handleCopy = () => {
+  const handleCopy = async () => {
     try {
-      navigator.clipboard.writeText(JSON.stringify(schedule, null, 2))
-      toast('Schedule copied to clipboard 📋', 'info')
+      await navigator.clipboard.writeText(JSON.stringify(schedule, null, 2))
+      toast('Schedule copied to clipboard', 'info')
     } catch {
       toast('Copy not supported in this browser', 'error')
     }
@@ -204,7 +225,6 @@ export default function StudyPlanner() {
   /* Clear */
   const handleClearAll = () => {
     setTasks([])
-    setSchedule([])
     localStorage.removeItem('planner_tasks')
     setShowConfirm(false)
     toast('All tasks cleared', 'info')
@@ -221,7 +241,7 @@ export default function StudyPlanner() {
 
       {/* Header */}
       <div className="mb-10">
-        <h1 className="text-4xl font-extrabold mb-2">
+        <h1 className="text-4xl font-bold mb-2">
           <span className="gradient-text">Study Planner</span>
         </h1>
         <p className="text-slate-400 text-lg">
@@ -314,7 +334,7 @@ export default function StudyPlanner() {
             </div>
 
             {/* Fatigue preview */}
-            <div style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)', borderRadius: 12, padding: '14px 16px' }}>
+            <div style={{ background: 'rgba(47,158,140,0.18)', border: '1px solid rgba(47,158,140,0.18)', borderRadius: 12, padding: '14px 16px' }}>
               <div className="text-sm font-bold mb-1">
                 Starting fatigue: <span style={{ color: fatigueColor(initPct) }}>{initPct}%</span>
                 <span className="text-slate-500 font-normal ml-2">({profile.currentFatigue ? 'your value' : 'auto'})</span>
@@ -450,7 +470,7 @@ export default function StudyPlanner() {
 
           {schedule.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
-              <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'rgba(99,102,241,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+              <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'rgba(47,158,140,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
                 <BookOpen size={32} className="text-indigo-400" />
               </div>
               <p className="text-slate-400">Add at least one task to generate your schedule.</p>
@@ -460,12 +480,12 @@ export default function StudyPlanner() {
               {/* Summary row */}
               <div className="grid grid-cols-3 gap-3 mb-6">
                 {[
-                  { label: 'Study', val: `${studyMin}m`, color: '#6366F1' },
+                  { label: 'Study', val: `${studyMin}m`, color: '#2F9E8C' },
                   { label: 'Breaks', val: `${breakMin}m`, color: '#F59E0B' },
                   { label: 'End fatigue', val: `${finalFatigue}%`, color: fatigueColor(finalFatigue) },
                 ].map(({ label, val, color }) => (
                   <div key={label} style={{ background: 'rgba(30,41,59,0.5)', borderRadius: 10, padding: '10px 12px', textAlign: 'center' }}>
-                    <div className="text-xl font-extrabold" style={{ color }}>{val}</div>
+                    <div className="text-xl font-bold" style={{ color }}>{val}</div>
                     <div className="text-xs text-slate-400 mt-1">{label}</div>
                   </div>
                 ))}

@@ -8,43 +8,38 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Lexend', 'sans-serif'],
-        display: ['Lexend', 'sans-serif'],
+        sans: ['Lexend', 'system-ui', 'sans-serif'],
+        display: ['Lexend', 'system-ui', 'sans-serif'],
       },
+      // Theme-aware colours: values flip between dark and light in index.css,
+      // so existing text-slate-*, text-indigo-400 etc. keep working and stay readable.
       colors: {
-        navy: {
-          900: '#0F172A',
-          800: '#1E293B',
-          700: '#334155',
+        slate: {
+          200: 'var(--c-slate-200)',
+          300: 'var(--c-slate-300)',
+          400: 'var(--c-slate-400)',
+          500: 'var(--c-slate-500)',
         },
+        indigo: { 400: 'var(--accent-text)' },
+        purple: { 400: 'var(--accent-text)' },
+        amber: { 300: 'var(--c-amber-300)', 400: 'var(--c-amber-400)' },
+        emerald: { 400: 'var(--c-emerald-400)' },
+        red: { 400: 'var(--c-red-400)' },
         accent: {
-          DEFAULT: '#6366F1',
-          light: '#A5B4FC',
-          dark: '#4F46E5',
+          DEFAULT: 'var(--accent)',
+          text: 'var(--accent-text)',
         },
       },
       animation: {
-        'fade-in': 'fadeIn 0.3s ease',
-        'slide-up': 'slideUp 0.25s ease',
-        'pulse-soft': 'pulseSoft 2s ease-in-out infinite',
+        'fade-in': 'fadeIn 0.3s cubic-bezier(0.22,1,0.36,1)',
+        'slide-up': 'slideUp 0.5s cubic-bezier(0.22,1,0.36,1)',
       },
       keyframes: {
-        fadeIn: {
-          from: { opacity: 0 },
-          to:   { opacity: 1 },
-        },
+        fadeIn: { from: { opacity: 0 }, to: { opacity: 1 } },
         slideUp: {
           from: { opacity: 0, transform: 'translateY(16px)' },
           to:   { opacity: 1, transform: 'translateY(0)' },
         },
-        pulseSoft: {
-          '0%, 100%': { opacity: 1 },
-          '50%':       { opacity: 0.65 },
-        },
-      },
-      boxShadow: {
-        'glow': '0 0 24px rgba(99,102,241,0.35)',
-        'glow-sm': '0 0 12px rgba(99,102,241,0.25)',
       },
     },
   },

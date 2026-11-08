@@ -46,11 +46,11 @@ warnings.filterwarnings('ignore')
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
 BASE_DIR   = os.path.dirname(os.path.abspath(__file__))
-DATA_CSV   = os.path.join(BASE_DIR, 'dyslexic_adaptive_scheduler_dataset_clean.csv')
-MODEL_OUT  = os.path.join(BASE_DIR, 'revision_scheduler_model.pkl')
-FEAT_OUT   = os.path.join(BASE_DIR, 'feature_names.json')
-FI_OUT     = os.path.join(BASE_DIR, 'feature_importances.json')
-EVAL_OUT   = os.path.join(BASE_DIR, 'evaluation_metrics.json')
+DATA_CSV   = os.path.join(BASE_DIR, 'data', 'dyslexic_adaptive_scheduler_dataset_clean.csv')
+MODEL_OUT  = os.path.join(BASE_DIR, 'models', 'revision_scheduler_model.pkl')
+FEAT_OUT   = os.path.join(BASE_DIR, 'artifacts', 'feature_names.json')
+FI_OUT     = os.path.join(BASE_DIR, 'artifacts', 'feature_importances.json')
+EVAL_OUT   = os.path.join(BASE_DIR, 'artifacts', 'evaluation_metrics.json')
 
 # ── Config ────────────────────────────────────────────────────────────────────
 TARGET      = 'recommended_next_review_days'
@@ -366,7 +366,7 @@ if __name__ == '__main__':
 #
 #   import joblib, pandas as pd
 #
-#   model = joblib.load('revision_scheduler_model.pkl')
+#   model = joblib.load('ml/models/revision_scheduler_model.pkl')
 #
 #   # Build a single-row DataFrame with PRE-SESSION features only.
 #   # The pipeline handles all preprocessing internally.

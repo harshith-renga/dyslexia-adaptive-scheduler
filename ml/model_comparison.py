@@ -43,7 +43,7 @@ from sklearn.ensemble import (
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_CSV = os.path.join(BASE_DIR, 'dyslexic_adaptive_scheduler_dataset_clean.csv')
+DATA_CSV = os.path.join(BASE_DIR, 'data', 'dyslexic_adaptive_scheduler_dataset_clean.csv')
 
 # ── Config ────────────────────────────────────────────────────────────────────
 TARGET      = 'recommended_next_review_days'
@@ -541,7 +541,7 @@ if __name__ == '__main__':
     print(f'\n→ Hist Gradient Boosting ranked #{hgb_rank} of {len(results)} models')
 
     # ── Save dashboard ────────────────────────────────────────────────────────
-    html_path = os.path.join(BASE_DIR, 'model_comparison_dashboard.html')
+    html_path = os.path.join(BASE_DIR, 'artifacts', 'model_comparison_dashboard.html')
     with open(html_path, 'w', encoding='utf-8') as f:
         f.write(build_html(results))
     print(f'\nDashboard saved -> {html_path}')

@@ -34,3 +34,13 @@ npm run dev -- --host 127.0.0.1 --port 5173
 ## Stop
 
 Press `Ctrl+C` in both terminals.
+
+## Retrain the models (optional)
+
+The trained models are already in `ml/models/`. To rebuild them, run from the project root:
+
+```bash
+python ml/trained_model.py     # revision interval model -> ml/models + ml/artifacts
+python ml/MCC_model.py         # severity classifier
+python ml/model_comparison.py  # benchmark dashboard -> ml/artifacts
+```

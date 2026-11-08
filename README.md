@@ -86,33 +86,31 @@ The core intelligence is a **`HistGradientBoostingRegressor`** pipeline trained 
 
 ```
 dyslexia-adaptive-scheduler/
-├── .gitignore
 ├── README.md
-├── RUN_GUIDE.md                           # Quick-start commands
-│
-├── # ── ML Scripts & Artifacts ──
-├── trained_model.py                       # Main training pipeline
-├── MCC_model.py                           # Multi-class severity classifier
-├── model_comparison.py                    # Model benchmarking & comparison
-│
-├── revision_scheduler_model.pkl           # Primary trained model
-├── revision_scheduler_xgb_model.pkl       # XGBoost comparison model
-├── dyslexia_severity_classifier.pkl       # Severity level classifier
-├── label_encoder_severity.pkl             # Label encoder artifact
-│
-├── dyslexic_adaptive_scheduler_dataset_clean.csv  # Cleaned training dataset
-│
-├── evaluation_metrics.json                # Model evaluation results
-├── feature_importances.json               # Primary model feature importances
-├── feature_importances_severity.json
-├── feature_importances_xgb.json
-├── feature_names.json                     # Feature names for inference
-├── feature_names_severity.json
-├── feature_names_xgb.json
+├── docs/
+│   └── RUN_GUIDE.md                       # Quick-start commands
 │
 ├── backend/                               # FastAPI application
-│   ├── main.py                            # API routes & ML inference logic
-│   └── requirements.txt                   # Python dependencies
+│   ├── main.py                            # API routes, auth, ML inference
+│   ├── supabase_store.py                  # Optional Supabase storage layer
+│   ├── requirements.txt                   # Python dependencies
+│   └── .env.example                       # Supabase settings template
+│
+├── ml/                                    # Machine learning
+│   ├── trained_model.py                   # Main training pipeline
+│   ├── MCC_model.py                       # Multi-class severity classifier
+│   ├── model_comparison.py                # Model benchmarking & comparison
+│   ├── data/
+│   │   └── dyslexic_adaptive_scheduler_dataset_clean.csv
+│   ├── models/                            # Trained models (.pkl)
+│   │   ├── revision_scheduler_model.pkl   # Primary model used by the API
+│   │   ├── revision_scheduler_xgb_model.pkl
+│   │   ├── dyslexia_severity_classifier.pkl
+│   │   └── label_encoder_severity.pkl
+│   └── artifacts/                         # Metrics, feature names, importances (.json)
+│
+├── supabase/
+│   └── schema.sql                         # Postgres tables for the Supabase option
 │
 └── frontend/                              # React + Vite application
     ├── index.html
@@ -120,11 +118,13 @@ dyslexia-adaptive-scheduler/
     ├── vite.config.js
     ├── tailwind.config.js
     ├── postcss.config.js
+    ├── public/
+    │   └── favicon.svg
     └── src/
         ├── main.jsx
         ├── App.jsx
-        ├── index.css
-        ├── api.js                         # Axios API client
+        ├── index.css                      # Design tokens and shared components
+        ├── api.js                         # API client
         ├── AuthContext.jsx
         ├── ToastContext.jsx
         ├── components/
@@ -254,3 +254,19 @@ Top predictive features driving review scheduling decisions (ordered by impact):
 ## License
 
 This project is for educational and research purposes.
+
+---
+
+## ☁️ Optional: Supabase Backend
+
+By default the app stores users and study sessions in a local SQLite file. To use
+Supabase (hosted Postgres) instead, with no change to the API, frontend, or ML model:
+
+1. Create a project at [supabase.com](https://supabase.com) and run [`supabase/schema.sql`](supabase/schema.sql) in the SQL editor.
+2. `pip install -r backend/requirements.txt`
+3. Copy `backend/.env.example` to `backend/.env` and fill in `SUPABASE_URL` and `SUPABASE_SERVICE_KEY` (Project Settings → API → service_role).
+4. Start the backend as usual. `GET /health` reports `"db": "supabase"` when active.
+
+Remove the `.env` values to go back to SQLite. The service-role key is used only by the
+FastAPI server (never the browser), and the tables have row level security enabled with
+no public policies.

@@ -43,17 +43,14 @@ function Navbar({ darkMode, setDarkMode }) {
   const close = () => setMenuOpen(false)
 
   return (
-    <nav
-      style={{ background: 'rgba(15,23,42,0.96)', borderBottom: '1px solid rgba(148,163,184,0.1)' }}
-      className="sticky top-0 z-50 backdrop-blur-md"
-    >
+    <nav className="site-nav" aria-label="Main">
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between h-16">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2" onClick={close}>
           <div
-            style={{ background: 'linear-gradient(135deg, #6366F1, #8B5CF6)', width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 12px rgba(99,102,241,0.4)' }}
+            style={{ background: 'var(--accent)', color: 'var(--on-accent)', width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           >
-            <BookOpen size={16} className="text-white" />
+            <BookOpen size={16} />
           </div>
           <span className="font-bold text-lg gradient-text">DysLexi</span>
           <span className="text-slate-400 font-medium text-lg hidden sm:inline">Scheduler</span>
@@ -92,7 +89,7 @@ function Navbar({ darkMode, setDarkMode }) {
           >
             {darkMode
               ? <Sun size={18} className="text-amber-400" />
-              : <Moon size={18} className="text-indigo-400" />}
+              : <Moon size={18} className="text-slate-300" />}
           </button>
 
           <button
@@ -108,8 +105,8 @@ function Navbar({ darkMode, setDarkMode }) {
       {/* Mobile drawer */}
       {menuOpen && (
         <div
-          style={{ background: 'rgba(15,23,42,0.98)', borderTop: '1px solid rgba(148,163,184,0.08)' }}
-          className="md:hidden px-6 pb-6 pt-4 flex flex-col gap-2"
+          style={{ background: 'var(--bg-primary)', borderTop: '1px solid var(--border)' }}
+          className="mobile-panel md:hidden px-6 pb-6 pt-4 flex flex-col gap-2"
         >
           {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
             <NavLink key={to} to={to} label={label} Icon={Icon} onClick={close} />
@@ -160,6 +157,13 @@ function App() {
     localStorage.setItem('fontSize', fontSize)
   }, [fontSize])
 
+  // Apply the saved reading-font choice on every page, not only after visiting Settings
+  useEffect(() => {
+    if (localStorage.getItem('dyslexicFont') === 'true') {
+      document.documentElement.style.setProperty('--font-base', "'Lexend Deca', 'Lexend', sans-serif")
+    }
+  }, [])
+
   useEffect(() => {
     if (!readingGuide) return
     const handler = e => setGuideY(e.clientY - 18)
@@ -168,12 +172,13 @@ function App() {
   }, [readingGuide])
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+    <div style={{ minHeight: '100svh', background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+      <a href="#main" className="skip-link">Skip to content</a>
       {readingGuide && (
         <div className="reading-guide" style={{ top: guideY }} aria-hidden="true" />
       )}
       <Navbar darkMode={darkMode} setDarkMode={setDarkMode} />
-      <main>
+      <main id="main">
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />

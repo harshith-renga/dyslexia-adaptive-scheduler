@@ -1,202 +1,190 @@
 import { motion } from 'framer-motion'
-import { BookOpen, Brain, Clock, ArrowRight, CheckCircle, Star, Zap } from 'lucide-react'
+import { Brain, Clock, ArrowRight, Eye, Coffee, BookOpen } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../AuthContext'
+
+const EASE = [0.22, 1, 0.36, 1]
 
 const FEATURES = [
   {
     icon: Brain,
-    color: '#6366F1',
-    glow: 'rgba(99,102,241,0.3)',
-    title: 'AI-Powered Scheduling',
-    desc: 'The app learns your memory patterns and suggests the perfect time to revise each topic.',
+    title: 'Revision timing that learns from you',
+    desc: 'A trained model reads your recall, sleep and fatigue after each session and picks the day to revisit each topic.',
   },
   {
     icon: Clock,
-    color: '#10B981',
-    glow: 'rgba(16,185,129,0.3)',
-    title: 'Fatigue Management',
-    desc: 'Smart breaks are inserted automatically so you never over-study and tire your brain.',
+    title: 'Breaks placed for you',
+    desc: 'The planner spaces short breaks between study blocks, so you stop before your focus runs out.',
   },
   {
-    icon: Zap,
-    color: '#F59E0B',
-    glow: 'rgba(245,158,11,0.3)',
-    title: 'Dyslexia Friendly',
-    desc: 'Large fonts, high contrast, text-to-speech, and a reading guide — built in from day one.',
+    icon: Eye,
+    title: 'Made for dyslexic readers',
+    desc: 'Lexend type, adjustable text size, a reading guide, text to speech and a cream light theme, all in the settings page.',
   },
 ]
 
 const STEPS = [
-  { num: '1', title: 'Create your profile', desc: 'Tell us your sleep, fatigue level, and dyslexia severity. That\'s all.' },
-  { num: '2', title: 'Add today\'s tasks',   desc: 'List the topics you want to study with estimated time and difficulty.' },
-  { num: '3', title: 'Follow your schedule', desc: 'The planner builds a break-spaced timeline. Save it with one tap.' },
+  { num: '1', title: 'Describe how you study', desc: 'Enter your sleep, fatigue and dyslexia severity.' },
+  { num: '2', title: 'Add today’s topics', desc: 'List what you want to cover, with time and difficulty.' },
+  { num: '3', title: 'Follow the timeline', desc: 'Get a study and break schedule, then save it with one tap.' },
 ]
 
-const STATS = [
-  { value: '40%', label: 'Less fatigue' },
-  { value: '3×',  label: 'Better retention' },
-  { value: '100%', label: 'Dyslexia focused' },
+const SAMPLE = [
+  { kind: 'study', time: '16:00', label: 'Study block', note: '25 min' },
+  { kind: 'break', time: '16:25', label: 'Break', note: '5 min' },
+  { kind: 'study', time: '16:30', label: 'Study block', note: '25 min' },
+  { kind: 'break', time: '16:55', label: 'Long break', note: '15 min' },
 ]
+
+const reveal = {
+  initial: { opacity: 0, y: 16 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true, margin: '-60px' },
+  transition: { duration: 0.7, ease: EASE },
+}
 
 export default function Landing() {
   const { user } = useAuth()
 
   return (
     <div style={{ background: 'var(--bg-primary)' }}>
-      {/* ── Hero ──────────────────────────────── */}
-      <section className="relative overflow-hidden px-6 pt-20 pb-32 flex flex-col items-center text-center">
-        {/* Background blobs */}
-        <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
-          <div style={{ position: 'absolute', top: '-20%', left: '-10%', width: '600px', height: '600px', background: 'radial-gradient(circle, rgba(99,102,241,0.18) 0%, transparent 70%)', borderRadius: '50%' }} />
-          <div style={{ position: 'absolute', bottom: '-10%', right: '-10%', width: '500px', height: '500px', background: 'radial-gradient(circle, rgba(139,92,246,0.14) 0%, transparent 70%)', borderRadius: '50%' }} />
-        </div>
-
+      {/* ── Hero ── */}
+      <section className="max-w-6xl mx-auto px-6 pt-20 pb-24 grid md:grid-cols-12 gap-12 items-center">
         <motion.div
-          initial={{ opacity: 0, y: -30 }}
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7 }}
-          className="relative max-w-4xl"
+          transition={{ duration: 0.7, ease: EASE }}
+          className="md:col-span-7"
         >
-          {/* Tag */}
-          <div className="inline-flex items-center gap-2 badge badge-indigo mb-8 text-sm px-4 py-2">
-            <Star size={14} /> Built for dyslexic learners
-          </div>
-
-          <h1 className="text-5xl md:text-7xl font-extrabold mb-6 leading-tight">
-            Study Smarter,<br />
-            <span className="gradient-text">Not Harder</span>
+          <h1 className="text-5xl md:text-6xl font-bold mb-6" style={{ lineHeight: 1.08 }}>
+            A revision planner that works around dyslexia and fatigue
           </h1>
-
-          <p className="text-xl md:text-2xl text-slate-400 mb-12 max-w-2xl mx-auto leading-relaxed">
-            An adaptive revision scheduler that accounts for your fatigue, sleep, and dyslexia — so every study session actually sticks.
+          <p className="text-lg md:text-xl text-slate-400 mb-10" style={{ maxWidth: '36rem' }}>
+            Tell it how you slept and how tired you are. It builds a study and break
+            timeline and predicts when to revise each topic again.
           </p>
 
-          {/* CTA buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-4">
             <Link
               to={user ? '/planner' : '/login'}
               id="cta-get-started"
               className="btn btn-primary btn-xl"
             >
-              Get Started <ArrowRight size={20} />
+              {user ? 'Open the planner' : 'Create your plan'} <ArrowRight size={20} />
             </Link>
-            {user && (
+            {user ? (
               <Link to="/dashboard" id="cta-dashboard" className="btn btn-ghost btn-xl">
-                Go to Dashboard
+                Go to dashboard
               </Link>
-            )}
-            {!user && (
+            ) : (
               <Link to="/dashboard" id="cta-demo" className="btn btn-ghost btn-xl">
-                View Demo
+                View the demo
               </Link>
             )}
           </div>
         </motion.div>
 
-        {/* Stats row */}
+        {/* Sample schedule: real component styles, illustrative data */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4, duration: 0.6 }}
-          className="relative flex flex-wrap justify-center gap-8 mt-20"
+          transition={{ duration: 0.8, delay: 0.15, ease: EASE }}
+          className="md:col-span-5 card p-6"
+          aria-label="Example study schedule"
         >
-          {STATS.map(({ value, label }) => (
-            <div key={label} className="text-center">
-              <div className="text-4xl font-extrabold gradient-text">{value}</div>
-              <div className="text-sm text-slate-400 mt-1">{label}</div>
-            </div>
-          ))}
+          <div className="flex items-center justify-between mb-4">
+            <span className="font-semibold">Sample afternoon</span>
+            <span className="text-sm text-slate-400">Example only</span>
+          </div>
+          <div className="flex flex-col gap-2">
+            {SAMPLE.map(({ kind, time, label, note }, i) => (
+              <div
+                key={i}
+                className={`schedule-block schedule-${kind} flex items-center justify-between`}
+              >
+                <span className="flex items-center gap-2 font-medium">
+                  {kind === 'study'
+                    ? <BookOpen size={16} className="text-indigo-400" />
+                    : <Coffee size={16} className="text-amber-400" />}
+                  {label}
+                </span>
+                <span className="text-sm text-slate-400 tabular">{time} · {note}</span>
+              </div>
+            ))}
+          </div>
         </motion.div>
       </section>
 
-      {/* ── Features ──────────────────────────── */}
+      {/* ── Features: alternating rows, not three equal cards ── */}
       <section className="max-w-6xl mx-auto px-6 pb-24">
-        <motion.h2
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          className="text-3xl md:text-4xl font-bold text-center mb-4"
-        >
-          Everything you need to learn effectively
+        <motion.h2 {...reveal} className="text-3xl md:text-4xl font-bold mb-12" style={{ maxWidth: '32rem' }}>
+          What it does for you
         </motion.h2>
-        <p className="text-center text-slate-400 mb-16 text-lg">Simple tools. Big results.</p>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {FEATURES.map(({ icon: Icon, color, glow, title, desc }, i) => (
+        <div className="flex flex-col">
+          {FEATURES.map(({ icon: Icon, title, desc }, i) => (
             <motion.div
               key={title}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.12 }}
-              whileHover={{ y: -6 }}
-              className="card p-8"
+              {...reveal}
+              className="grid md:grid-cols-12 gap-6 py-8 items-start"
+              style={{ borderTop: '1px solid var(--border)' }}
             >
-              <div
-                style={{ background: `radial-gradient(circle, ${glow} 0%, transparent 70%)`, width: 64, height: 64, borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '24px' }}
-              >
-                <Icon size={30} style={{ color }} />
+              <div className={`md:col-span-1 ${i % 2 ? 'md:order-2 md:justify-self-end' : ''}`}>
+                <Icon size={28} className="text-indigo-400" />
               </div>
-              <h3 className="text-xl font-bold mb-3">{title}</h3>
-              <p className="text-slate-400 leading-relaxed">{desc}</p>
+              <h3 className={`text-2xl font-semibold md:col-span-5 ${i % 2 ? 'md:order-1' : ''}`}>{title}</h3>
+              <p className={`text-lg text-slate-400 md:col-span-6 ${i % 2 ? 'md:order-3' : ''}`}>{desc}</p>
             </motion.div>
           ))}
         </div>
       </section>
 
-      {/* ── How it works ──────────────────────── */}
+      {/* ── How it works ── */}
       <section style={{ background: 'var(--bg-secondary)', borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)' }} className="py-24 px-6">
-        <div className="max-w-5xl mx-auto">
-          <motion.h2
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="text-3xl md:text-4xl font-bold text-center mb-4"
-          >
+        <div className="max-w-6xl mx-auto">
+          <motion.h2 {...reveal} className="text-3xl md:text-4xl font-bold mb-12">
             How it works
           </motion.h2>
-          <p className="text-center text-slate-400 mb-16 text-lg">Three simple steps. Zero confusion.</p>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <ol className="grid md:grid-cols-3 gap-8 list-none p-0 m-0">
             {STEPS.map(({ num, title, desc }, i) => (
-              <motion.div
+              <motion.li
                 key={num}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className="flex flex-col items-center text-center"
+                {...reveal}
+                transition={{ ...reveal.transition, delay: i * 0.08 }}
               >
                 <div
-                  style={{ width: 56, height: 56, borderRadius: '50%', background: 'linear-gradient(135deg, #6366F1, #8B5CF6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, fontWeight: 800, color: '#fff', marginBottom: 20, boxShadow: '0 0 24px rgba(99,102,241,0.4)' }}
+                  className="tabular"
+                  style={{ fontSize: 48, lineHeight: 1, fontWeight: 600, color: 'var(--accent-text)', marginBottom: 16 }}
                 >
                   {num}
                 </div>
-                <h3 className="text-xl font-bold mb-2">{title}</h3>
-                <p className="text-slate-400 leading-relaxed">{desc}</p>
-              </motion.div>
+                <h3 className="text-xl font-semibold mb-2">{title}</h3>
+                <p className="text-slate-400">{desc}</p>
+              </motion.li>
             ))}
-          </div>
+          </ol>
         </div>
       </section>
 
-      {/* ── CTA Banner ────────────────────────── */}
-      <section className="max-w-4xl mx-auto px-6 py-24 text-center">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.97 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
-          style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.1))', border: '1px solid rgba(99,102,241,0.3)', borderRadius: 24, padding: '48px 32px' }}
-        >
-          <CheckCircle size={48} className="mx-auto mb-6 text-indigo-400" />
-          <h2 className="text-3xl md:text-4xl font-extrabold mb-4">Ready to start learning better?</h2>
-          <p className="text-slate-400 text-lg mb-8">Join thousands of dyslexic students who study smarter every day.</p>
+      {/* ── Closing call to action ── */}
+      <section className="max-w-6xl mx-auto px-6 py-24 flex flex-col md:flex-row md:items-center md:justify-between gap-8">
+        <motion.h2 {...reveal} className="text-3xl md:text-4xl font-bold" style={{ maxWidth: '28rem' }}>
+          Plan your next study session
+        </motion.h2>
+        <motion.div {...reveal}>
           <Link to={user ? '/planner' : '/login'} id="cta-bottom" className="btn btn-primary btn-xl">
-            {user ? 'Open Planner' : 'Create Free Account'} <ArrowRight size={20} />
+            {user ? 'Open the planner' : 'Create a free account'} <ArrowRight size={20} />
           </Link>
         </motion.div>
       </section>
+
+      <footer style={{ borderTop: '1px solid var(--border)' }} className="px-6 py-8">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between gap-2 text-sm text-slate-400">
+          <span>DysLexi Scheduler</span>
+          <span>Adaptive revision planning for dyslexic students</span>
+        </div>
+      </footer>
     </div>
   )
 }
