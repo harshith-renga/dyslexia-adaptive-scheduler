@@ -111,6 +111,9 @@ p { text-wrap: pretty; }
   left: 16px;
   top: -64px;
   z-index: 100;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
   padding: 8px 16px;
   border-radius: 8px;
   background: var(--accent);
@@ -310,6 +313,7 @@ input[type=range]::-moz-range-thumb {
 
 /* ─── Nav ─── */
 .nav-link {
+  min-height: 44px;
   padding: 8px 16px;
   border-radius: 8px;
   font-weight: 500;

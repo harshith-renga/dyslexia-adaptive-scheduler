@@ -10,6 +10,7 @@ import AccessibilitySettings from './pages/AccessibilitySettings'
 import { AuthProvider, useAuth } from './AuthContext'
 import { ToastProvider } from './ToastContext'
 import Toast from './components/Toast'
+import usePageMeta from './usePageMeta'
 
 /* ── Nav config ────────────────────────────────────────── */
 const NAV_ITEMS = [
@@ -46,7 +47,7 @@ function Navbar({ darkMode, setDarkMode }) {
     <nav className="site-nav" aria-label="Main">
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between h-16">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2" onClick={close}>
+        <Link to="/" className="flex items-center gap-2 min-h-[44px]" onClick={close}>
           <div
             style={{ background: 'var(--accent)', color: 'var(--on-accent)', width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           >
@@ -57,7 +58,7 @@ function Navbar({ darkMode, setDarkMode }) {
         </Link>
 
         {/* Desktop nav */}
-        <div className="hidden md:flex items-center gap-1">
+        <div className="hidden xl:flex items-center gap-1">
           {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
             <NavLink key={to} to={to} label={label} Icon={Icon} />
           ))}
@@ -67,7 +68,7 @@ function Navbar({ darkMode, setDarkMode }) {
         {/* Right controls */}
         <div className="flex items-center gap-2">
           {user && (
-            <div className="hidden md:flex items-center gap-3">
+            <div className="hidden xl:flex items-center gap-3">
               <span className="text-sm text-slate-400">
                 Hi, <strong className="text-slate-200">{user.username}</strong>
               </span>
@@ -83,7 +84,7 @@ function Navbar({ darkMode, setDarkMode }) {
 
           <button
             onClick={() => setDarkMode(d => !d)}
-            className="btn btn-ghost btn-sm p-2"
+            className="btn btn-ghost btn-sm p-2 min-h-[44px] min-w-[44px]"
             title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
             aria-label="Toggle colour mode"
           >
@@ -94,7 +95,7 @@ function Navbar({ darkMode, setDarkMode }) {
 
           <button
             onClick={() => setMenuOpen(o => !o)}
-            className="md:hidden btn btn-ghost btn-sm p-2"
+            className="xl:hidden btn btn-ghost btn-sm p-2 min-h-[44px] min-w-[44px]"
             aria-label={menuOpen ? 'Close menu' : 'Open menu'}
           >
             {menuOpen ? <X size={20} /> : <Menu size={20} />}
@@ -106,7 +107,7 @@ function Navbar({ darkMode, setDarkMode }) {
       {menuOpen && (
         <div
           style={{ background: 'var(--bg-primary)', borderTop: '1px solid var(--border)' }}
-          className="mobile-panel md:hidden px-6 pb-6 pt-4 flex flex-col gap-2"
+          className="mobile-panel xl:hidden px-6 pb-6 pt-4 flex flex-col gap-2"
         >
           {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
             <NavLink key={to} to={to} label={label} Icon={Icon} onClick={close} />
@@ -135,6 +136,7 @@ function PrivateRoute({ children }) {
 
 /* ── App (inner) ─────────────────────────────────────────*/
 function App() {
+  usePageMeta()
   const [darkMode, setDarkMode] = useState(() => {
     try { return JSON.parse(localStorage.getItem('darkMode')) ?? true } catch { return true }
   })

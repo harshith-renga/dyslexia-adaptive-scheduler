@@ -5,12 +5,37 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>DysLexi Scheduler | Revision planner for dyslexic students</title>
-    <meta name="description" content="An adaptive revision scheduler for dyslexic students. It plans study blocks and breaks around fatigue and sleep, and predicts when to revise each topic." />
+    <meta name="description" content="An adaptive revision planner for dyslexic students. It builds study and break timelines around sleep and fatigue, and predicts when to revise each topic." />
     <meta name="theme-color" content="#181818" />
+    <link rel="canonical" href="https://dyslexia-adaptive-scheduler.vercel.app/" />
+
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="DysLexi Scheduler" />
-    <meta property="og:description" content="Study and break timelines built around dyslexia, sleep and fatigue." />
-    <meta name="twitter:card" content="summary" />
+    <meta property="og:site_name" content="DysLexi Scheduler" />
+    <meta property="og:title" content="DysLexi Scheduler | Revision planner for dyslexic students" />
+    <meta property="og:description" content="Study and break timelines built around dyslexia, sleep and fatigue, with revision dates predicted by a trained model." />
+    <meta property="og:url" content="https://dyslexia-adaptive-scheduler.vercel.app/" />
+    <meta property="og:image" content="https://dyslexia-adaptive-scheduler.vercel.app/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="DysLexi Scheduler: a revision planner that works around dyslexia and fatigue" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="DysLexi Scheduler | Revision planner for dyslexic students" />
+    <meta name="twitter:description" content="Study and break timelines built around dyslexia, sleep and fatigue." />
+    <meta name="twitter:image" content="https://dyslexia-adaptive-scheduler.vercel.app/og-image.png" />
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "DysLexi Scheduler",
+      "url": "https://dyslexia-adaptive-scheduler.vercel.app/",
+      "description": "An adaptive revision planner for dyslexic students. It builds study and break timelines around sleep and fatigue, and predicts when to revise each topic.",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Any (web browser)",
+      "audience": { "@type": "Audience", "audienceType": "Dyslexic students" },
+      "inLanguage": "en"
+    }
+    </script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -19,6 +44,7 @@
   </head>
   <body>
     <div id="root"></div>
+    <noscript>DysLexi Scheduler needs JavaScript to run. Please enable it in your browser.</noscript>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

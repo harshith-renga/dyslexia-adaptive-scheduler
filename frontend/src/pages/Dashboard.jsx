@@ -406,7 +406,7 @@ export default function Dashboard({ darkMode }) {
             )}
 
             {/* Buttons */}
-            <div className="flex gap-3 mt-1">
+            <div className="flex flex-wrap gap-3 mt-1">
               <button
                 id="btn-predict"
                 type="submit"

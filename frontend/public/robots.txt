@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /planner
+Disallow: /analytics
+
+Sitemap: https://dyslexia-adaptive-scheduler.vercel.app/sitemap.xml
