@@ -1,186 +1,220 @@
-import { motion } from 'framer-motion'
-import { Brain, Clock, ArrowRight, Eye, Coffee, BookOpen } from 'lucide-react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { ArrowRight, Brain, BookOpen, Coffee, Volume2, Type, MousePointer2, Moon } from 'lucide-react'
 import { useAuth } from '../AuthContext'
+import '../landing.css'
 
-const EASE = [0.22, 1, 0.36, 1]
+/* ── Real figures from ml/artifacts (the trained model) ─────────────────── */
+const MODEL = {
+  mae: '0.46',
+  features: [
+    { name: 'Dyslexia severity', value: 0.946 },
+    { name: 'Prior review count', value: 0.814 },
+    { name: 'Fatigue rating', value: 0.299 },
+    { name: 'Sleep the night before', value: 0.167 },
+    { name: 'Distraction level', value: 0.151 },
+  ],
+}
 
-const FEATURES = [
-  {
-    icon: Brain,
-    title: 'Revision timing that learns from you',
-    desc: 'A trained model reads your recall, sleep and fatigue after each session and picks the day to revisit each topic.',
-  },
-  {
-    icon: Clock,
-    title: 'Breaks placed for you',
-    desc: 'The planner spaces short breaks between study blocks, so you stop before your focus runs out.',
-  },
-  {
-    icon: Eye,
-    title: 'Made for dyslexic readers',
-    desc: 'Lexend type, adjustable text size, a reading guide, text to speech and a cream light theme, all in the settings page.',
-  },
+/* ── Illustrative schedule shown inside the frames (not user data) ──────── */
+const BLOCKS = [
+  { kind: 'study', label: 'Algebra', time: '16:00', min: 25, to: 41 },
+  { kind: 'break', label: 'Break', time: '16:25', min: 5, to: 41 },
+  { kind: 'study', label: 'English reading', time: '16:30', min: 25, to: 58 },
+  { kind: 'break', label: 'Long break', time: '16:55', min: 15, to: 58 },
+  { kind: 'study', label: 'Biology', time: '17:10', min: 25, to: 74 },
 ]
 
-const STEPS = [
-  { num: '1', title: 'Describe how you study', desc: 'Enter your sleep, fatigue and dyslexia severity.' },
-  { num: '2', title: 'Add today’s topics', desc: 'List what you want to cover, with time and difficulty.' },
-  { num: '3', title: 'Follow the timeline', desc: 'Get a study and break schedule, then save it with one tap.' },
+const SIZES = [
+  { label: 'Small', px: 14 },
+  { label: 'Normal', px: 16 },
+  { label: 'Large', px: 18 },
+  { label: 'X-Large', px: 20 },
 ]
 
-const SAMPLE = [
-  { kind: 'study', time: '16:00', label: 'Study block', note: '25 min' },
-  { kind: 'break', time: '16:25', label: 'Break', note: '5 min' },
-  { kind: 'study', time: '16:30', label: 'Study block', note: '25 min' },
-  { kind: 'break', time: '16:55', label: 'Long break', note: '15 min' },
-]
+function Frame({ title, note, children }) {
+  return (
+    <div className="lp-frame" role="img" aria-label={`${title}. ${note}`}>
+      <div className="lp-frame-bar">
+        <span className="lp-frame-title">{title}</span>
+        <span className="lp-frame-note">{note}</span>
+      </div>
+      <div className="lp-frame-body" aria-hidden="true">{children}</div>
+    </div>
+  )
+}
 
-const reveal = {
-  initial: { opacity: 0, y: 16 },
-  whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true, margin: '-60px' },
-  transition: { duration: 0.7, ease: EASE },
+function ScheduleRows({ rows = BLOCKS }) {
+  return (
+    <div className="lp-rows">
+      {rows.map((b, i) => (
+        <div key={i} className={`schedule-block schedule-${b.kind} lp-row`}>
+          <div className="lp-row-top">
+            <span className="lp-row-label">
+              {b.kind === 'study' ? <BookOpen size={16} /> : <Coffee size={16} />}
+              {b.label}
+            </span>
+            <span className="lp-row-time tabular">{b.time} · {b.min} min</span>
+          </div>
+          <div className="lp-meter">
+            <span className="lp-bar" style={{ '--to': `${b.to}%`, '--d': `${i * 0.18}s` }} />
+          </div>
+          <span className="lp-row-fatigue tabular">Fatigue {b.to}%</span>
+        </div>
+      ))}
+    </div>
+  )
 }
 
 export default function Landing() {
   const { user } = useAuth()
+  const [size, setSize] = useState(18)
 
   return (
     <div style={{ background: 'var(--bg-primary)' }}>
-      {/* ── Hero ── */}
-      <section className="max-w-6xl mx-auto px-6 pt-20 pb-24 grid md:grid-cols-12 gap-12 items-center">
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, ease: EASE }}
-          className="md:col-span-7"
-        >
-          <h1 className="text-5xl md:text-6xl font-bold mb-6" style={{ lineHeight: 1.08 }}>
-            A revision planner that works around dyslexia and fatigue
-          </h1>
-          <p className="text-lg md:text-xl text-slate-400 mb-10" style={{ maxWidth: '36rem' }}>
-            Tell it how you slept and how tired you are. It builds a study and break
-            timeline and predicts when to revise each topic again.
-          </p>
+      {/* ── 1. Hero ── */}
+      <section className="lp-screen">
+        <div className="lp-wrap lp-grid">
+          <div>
+            <h1 className="lp-h1">
+              Revision planning for dyslexic students, timed to your fatigue
+            </h1>
+            <p className="lp-lead">
+              A trained model predicts your next review date to within {MODEL.mae} days,
+              and the planner places your breaks before your focus runs out.
+            </p>
+            <div className="lp-actions">
+              <Link to={user ? '/planner' : '/login'} id="cta-get-started" className="btn btn-primary btn-xl">
+                {user ? 'Open the planner' : 'Create your plan'} <ArrowRight size={20} />
+              </Link>
+              {user ? (
+                <Link to="/dashboard" id="cta-dashboard" className="btn btn-ghost btn-xl">Go to dashboard</Link>
+              ) : (
+                <Link to="/dashboard" id="cta-demo" className="btn btn-ghost btn-xl">Explore the dashboard</Link>
+              )}
+            </div>
+          </div>
 
-          <div className="flex flex-col sm:flex-row gap-4">
-            <Link
-              to={user ? '/planner' : '/login'}
-              id="cta-get-started"
-              className="btn btn-primary btn-xl"
-            >
-              {user ? 'Open the planner' : 'Create your plan'} <ArrowRight size={20} />
+          <Frame title="Study timeline" note="Example data">
+            <ScheduleRows />
+          </Frame>
+        </div>
+      </section>
+
+      {/* ── 2. The planner ── */}
+      <section className="lp-screen">
+        <div className="lp-wrap lp-grid lp-grid-flip">
+          <div>
+            <h2 className="lp-h2">A timeline that stops you before you burn out</h2>
+            <p className="lp-body">
+              Enter your sleep, how tired you are and your dyslexia severity. Each topic is
+              ordered by priority, split into blocks, and given a fatigue estimate that rises
+              with difficulty and distraction.
+            </p>
+            <p className="lp-body">Save the plan once and every block lands in your account.</p>
+          </div>
+          <Frame title="Your energy profile" note="Example data">
+            <div className="lp-profile">
+              {[
+                ['Dyslexia severity', 'Moderate'],
+                ['Hours slept', '6.5 h'],
+                ['Tiredness now', '40%'],
+                ['Break every', '45 min'],
+              ].map(([k, v]) => (
+                <div key={k} className="lp-kv"><span>{k}</span><strong className="tabular">{v}</strong></div>
+              ))}
+            </div>
+            <ScheduleRows rows={BLOCKS.slice(0, 3)} />
+          </Frame>
+        </div>
+      </section>
+
+      {/* ── 3. The model: the one contrasting ground ── */}
+      <section className="lp-screen lp-accent">
+        <div className="lp-wrap lp-grid">
+          <div>
+            <div className="lp-big tabular" aria-label={`${MODEL.mae} days`}>{MODEL.mae}<span> days</span></div>
+            <p className="lp-lead lp-lead-on">
+              Average error when the model predicts your next revision date, measured by cross
+              validation on the project's training data.
+            </p>
+          </div>
+          <div className="lp-feat">
+            <h2 className="lp-h3"><Brain size={22} /> What it weighs</h2>
+            <ul className="lp-feat-list">
+              {MODEL.features.map(f => (
+                <li key={f.name}>
+                  <div className="lp-feat-row">
+                    <span>{f.name}</span>
+                    <span className="tabular">{f.value.toFixed(2)}</span>
+                  </div>
+                  <div className="lp-feat-track"><span style={{ width: `${(f.value / 0.946) * 100}%` }} /></div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      {/* ── 4. Reading comfort (live) ── */}
+      <section className="lp-screen">
+        <div className="lp-wrap lp-grid lp-grid-flip">
+          <div>
+            <h2 className="lp-h2">Set the page up for the way you read</h2>
+            <p className="lp-body">
+              Choose a text size, switch the reading font, turn on the reading guide, or have
+              any text read aloud. Try the sizes on the right.
+            </p>
+            <Link to="/settings" className="lp-link">Open accessibility settings <ArrowRight size={18} /></Link>
+          </div>
+          <div className="lp-frame">
+            <div className="lp-frame-bar">
+              <span className="lp-frame-title">Reading comfort</span>
+              <span className="lp-frame-note">Try it</span>
+            </div>
+            <div className="lp-frame-body">
+              <div className="lp-seg" role="group" aria-label="Text size">
+                {SIZES.map(s => (
+                  <button
+                    key={s.label}
+                    type="button"
+                    className={`lp-seg-btn ${size === s.px ? 'is-on' : ''}`}
+                    aria-pressed={size === s.px}
+                    onClick={() => setSize(s.px)}
+                  >
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+              <p className="lp-sample" style={{ fontSize: size }}>
+                Short, frequent sessions beat long ones. Aim for 25 minute blocks with a short
+                break between them.
+              </p>
+              <div className="lp-tools" aria-hidden="true">
+                <span><Type size={16} /> Lexend font</span>
+                <span><MousePointer2 size={16} /> Reading guide</span>
+                <span><Moon size={16} /> Cream or dark theme</span>
+                <span><Volume2 size={16} /> Read aloud</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── 5. Close ── */}
+      <section className="lp-screen lp-close">
+        <div className="lp-wrap">
+          <h2 className="lp-h1 lp-h1-close">Plan your next study session</h2>
+          <div className="lp-actions">
+            <Link to={user ? '/planner' : '/login'} id="cta-bottom" className="btn btn-primary btn-xl">
+              {user ? 'Open the planner' : 'Create a free account'} <ArrowRight size={20} />
             </Link>
-            {user ? (
-              <Link to="/dashboard" id="cta-dashboard" className="btn btn-ghost btn-xl">
-                Go to dashboard
-              </Link>
-            ) : (
-              <Link to="/dashboard" id="cta-demo" className="btn btn-ghost btn-xl">
-                Explore the dashboard
-              </Link>
-            )}
           </div>
-        </motion.div>
-
-        {/* Sample schedule: real component styles, illustrative data */}
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.15, ease: EASE }}
-          className="md:col-span-5 card p-6"
-          aria-label="Example study schedule"
-        >
-          <div className="flex items-center justify-between mb-4">
-            <span className="font-semibold">Sample afternoon</span>
-            <span className="text-sm text-slate-400">Example only</span>
-          </div>
-          <div className="flex flex-col gap-2">
-            {SAMPLE.map(({ kind, time, label, note }, i) => (
-              <div
-                key={i}
-                className={`schedule-block schedule-${kind} flex items-center justify-between`}
-              >
-                <span className="flex items-center gap-2 font-medium">
-                  {kind === 'study'
-                    ? <BookOpen size={16} className="text-indigo-400" />
-                    : <Coffee size={16} className="text-amber-400" />}
-                  {label}
-                </span>
-                <span className="text-sm text-slate-400 tabular">{time} · {note}</span>
-              </div>
-            ))}
-          </div>
-        </motion.div>
-      </section>
-
-      {/* ── Features: alternating rows, not three equal cards ── */}
-      <section className="max-w-6xl mx-auto px-6 pb-24">
-        <motion.h2 {...reveal} className="text-3xl md:text-4xl font-bold mb-12" style={{ maxWidth: '32rem' }}>
-          What it does for you
-        </motion.h2>
-
-        <div className="flex flex-col">
-          {FEATURES.map(({ icon: Icon, title, desc }, i) => (
-            <motion.div
-              key={title}
-              {...reveal}
-              className="grid md:grid-cols-12 gap-6 py-8 items-start"
-              style={{ borderTop: '1px solid var(--border)' }}
-            >
-              <div className={`md:col-span-1 ${i % 2 ? 'md:order-2 md:justify-self-end' : ''}`}>
-                <Icon size={28} className="text-indigo-400" />
-              </div>
-              <h3 className={`text-2xl font-semibold md:col-span-5 ${i % 2 ? 'md:order-1' : ''}`}>{title}</h3>
-              <p className={`text-lg text-slate-400 md:col-span-6 ${i % 2 ? 'md:order-3' : ''}`}>{desc}</p>
-            </motion.div>
-          ))}
         </div>
       </section>
 
-      {/* ── How it works ── */}
-      <section style={{ background: 'var(--bg-secondary)', borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)' }} className="py-24 px-6">
-        <div className="max-w-6xl mx-auto">
-          <motion.h2 {...reveal} className="text-3xl md:text-4xl font-bold mb-12">
-            How it works
-          </motion.h2>
-
-          <ol className="grid md:grid-cols-3 gap-8 list-none p-0 m-0">
-            {STEPS.map(({ num, title, desc }, i) => (
-              <motion.li
-                key={num}
-                {...reveal}
-                transition={{ ...reveal.transition, delay: i * 0.08 }}
-              >
-                <div
-                  className="tabular"
-                  style={{ fontSize: 48, lineHeight: 1, fontWeight: 600, color: 'var(--accent-text)', marginBottom: 16 }}
-                >
-                  {num}
-                </div>
-                <h3 className="text-xl font-semibold mb-2">{title}</h3>
-                <p className="text-slate-400">{desc}</p>
-              </motion.li>
-            ))}
-          </ol>
-        </div>
-      </section>
-
-      {/* ── Closing call to action ── */}
-      <section className="max-w-6xl mx-auto px-6 py-24 flex flex-col md:flex-row md:items-center md:justify-between gap-8">
-        <motion.h2 {...reveal} className="text-3xl md:text-4xl font-bold" style={{ maxWidth: '28rem' }}>
-          Plan your next study session
-        </motion.h2>
-        <motion.div {...reveal}>
-          <Link to={user ? '/planner' : '/login'} id="cta-bottom" className="btn btn-primary btn-xl">
-            {user ? 'Open the planner' : 'Create a free account'} <ArrowRight size={20} />
-          </Link>
-        </motion.div>
-      </section>
-
-      <footer style={{ borderTop: '1px solid var(--border)' }} className="px-6 py-8">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between gap-2 text-sm text-slate-400">
+      <footer className="lp-footer">
+        <div className="lp-wrap lp-footer-row">
           <span>DysLexi Scheduler</span>
           <span>Adaptive revision planning for dyslexic students</span>
         </div>
