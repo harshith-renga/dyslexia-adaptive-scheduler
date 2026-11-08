@@ -78,7 +78,7 @@ export default function Landing() {
               </Link>
             ) : (
               <Link to="/dashboard" id="cta-demo" className="btn btn-ghost btn-xl">
-                View the demo
+                Explore the dashboard
               </Link>
             )}
           </div>

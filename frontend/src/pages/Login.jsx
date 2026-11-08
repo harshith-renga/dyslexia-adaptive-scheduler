@@ -147,7 +147,7 @@ export default function Login() {
 
         {/* Quick tip */}
         <p className="text-center text-slate-500 text-sm mt-6">
-          No email confirmation is needed for this demo.
+          Your account is ready as soon as you create it. No email confirmation is needed.
         </p>
       </motion.div>
     </div>
