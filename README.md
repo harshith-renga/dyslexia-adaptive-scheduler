@@ -270,3 +270,11 @@ Supabase (hosted Postgres) instead, with no change to the API, frontend, or ML m
 Remove the `.env` values to go back to SQLite. The service-role key is used only by the
 FastAPI server (never the browser), and the tables have row level security enabled with
 no public policies.
+
+---
+
+## 🚀 Deployment
+
+- **Frontend (Vercel):** import the repo with *Root Directory* `frontend`. Set `VITE_API_URL` to your backend URL.
+- **Backend (Vercel, Python):** import the repo a second time with the root directory left empty. `api/index.py`, `vercel.json` and the root `requirements.txt` are already set up. Add `SUPABASE_URL` and `SUPABASE_SERVICE_KEY` as environment variables, because Vercel's disk is temporary and SQLite data would not persist. Add the frontend URL to `CORS_ORIGINS` if it differs from the default.
+- Any other Python host (Render, Railway, Fly.io) also works: run `uvicorn main:app` from `backend/`.

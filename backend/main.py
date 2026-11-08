@@ -44,6 +44,8 @@ app.add_middleware(
         "http://localhost:5174",
         "http://127.0.0.1:5174",
         "http://localhost:3000",
+        "https://dyslexia-adaptive-scheduler.vercel.app",
+        *[o.strip() for o in os.getenv("CORS_ORIGINS", "").split(",") if o.strip()],
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -54,7 +56,13 @@ app.add_middleware(
 # SQLite database
 # ════════════════════════════════════════════════════════════════════════════
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_PATH  = os.path.join(BASE_DIR, "scheduler.db")
+# Serverless hosts (Vercel) have a read-only project folder: use /tmp there.
+# That copy is temporary, so set SUPABASE_URL / SUPABASE_SERVICE_KEY for real storage.
+DB_PATH  = (
+    os.path.join("/tmp", "scheduler.db")
+    if os.getenv("VERCEL")
+    else os.path.join(BASE_DIR, "scheduler.db")
+)
 
 
 def _get_conn() -> sqlite3.Connection:
