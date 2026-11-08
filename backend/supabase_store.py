@@ -17,8 +17,9 @@ try:  # optional dependency
 except ImportError:
     pass
 
-SUPABASE_URL = os.getenv("SUPABASE_URL", "").strip()
-SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_KEY", "").strip()
+SUPABASE_URL = os.getenv("SUPABASE_URL", "").strip().rstrip("/")
+# Keys never contain whitespace; drop any that slipped in when the value was pasted.
+SUPABASE_KEY = "".join(os.getenv("SUPABASE_SERVICE_KEY", "").split())
 
 _client = None
 enabled = False
